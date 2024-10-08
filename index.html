@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动售货机</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>自动售货机</h1>
+
+<h2>商品列表</h2>
+<table id="productTable">
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>价格</th>
+            <th>库存</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<h2>补货</h2>
+<label for="restockName">商品名称:</label>
+<input type="text" id="restockName">
+<label for="restockQuantity">数量:</label>
+<input type="number" id="restockQuantity" min="1">
+<button onclick="restockProduct()">补货</button>
+
+<h2>销售商品</h2>
+<label for="sellName">商品名称:</label>
+<input type="text" id="sellName">
+<label for="sellQuantity">数量:</label>
+<input type="number" id="sellQuantity" min="1">
+<label for="amountPaid">金额:</label>
+<input type="number" id="amountPaid" min="0" step="0.01">
+<button onclick="sellProduct()">销售</button>
+
+<script>
+    class Product {
+        constructor(name, price, stock) {
+            this.name = name;
+            this.price = price;
+            this.stock = stock;
+        }
+    }
+
+    const vendingMachine = {
+        products: [
+            new Product("可乐", 3.0, 10),
+            new Product("薯片", 2.5, 5),
+            new Product("巧克力", 5.0, 8)
+        ],
+        listProducts: function() {
+            const tbody = document.querySelector("#productTable tbody");
+            tbody.innerHTML = "";
+            this.products.forEach(product => {
+                const row = `<tr>
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>${product.stock}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        },
+        restockProduct: function(name, quantity) {
+            const product = this.products.find(p => p.name === name);
+            if (product) {
+                product.stock += quantity;
+                alert(`已给商品 '${name}' 补货 ${quantity} 件，当前库存: ${product.stock}`);
+                this.listProducts();
+            } else {
+                alert(`未找到商品 '${name}'`);
+            }
+        },
+        sellProduct: function(name, quantity, amountPaid) {
+            const product = this.products.find(p => p.name === name);
+            if (product) {
+                if (product.stock < quantity) {
+                    alert(`库存不足，当前库存: ${product.stock}`);
+                    return;
+                }
+                const totalPrice = product.price * quantity;
+                if (amountPaid < totalPrice) {
+                    alert(`金额不足，需支付: ${totalPrice}, 实际支付: ${amountPaid}`);
+                    return;
+                }
+                product.stock -= quantity;
+                const change = amountPaid - totalPrice;
+                alert(`销售成功！商品: ${name}, 数量: ${quantity}, 找零: ${change}`);
+                this.listProducts();
+            } else {
+                alert(`未找到商品 '${name}'`);
+            }
+        }
+    };
+
+    function restockProduct() {
+        const name = document.getElementById("restockName").value;
+        const quantity = parseInt(document.getElementById("restockQuantity").value);
+        vendingMachine.restockProduct(name, quantity);
+    }
+
+    function sellProduct() {
+        const name = document.getElementById("sellName").value;
+        const quantity = parseInt(document.getElementById("sellQuantity").value);
+        const amountPaid = parseFloat(document.getElementById("amountPaid").value);
+        vendingMachine.sellProduct(name, quantity, amountPaid);
+    }
+
+    // 初始化商品列表
+    vendingMachine.listProducts();
+</script>
+
+</body>
+</html>
